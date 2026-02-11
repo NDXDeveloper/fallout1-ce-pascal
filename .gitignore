@@ -1,0 +1,23 @@
+# Intermediate build artifacts
+lib/
+
+# Binary + game data directory
+bin/
+
+# FPC compiled artifacts
+*.o
+*.ppu
+*.s
+ppas.sh
+
+# Empty placeholder directories
+os/
+packages/
+tests/
+
+# Editor / OS junk
+*~
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
