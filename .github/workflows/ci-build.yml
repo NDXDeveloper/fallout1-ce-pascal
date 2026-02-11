@@ -1,0 +1,63 @@
+name: CI Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y fpc libsdl2-dev
+
+      - name: Build (release)
+        run: make rebuild
+
+      - name: Build (debug)
+        run: make debug-rebuild
+
+      - name: Count remaining stubs
+        run: make count
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fallout_ce-linux-x86_64
+          path: bin/fallout_ce
+          retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y fpc libsdl2-dev
+
+      - name: Build release binary
+        run: make rebuild
+
+      - name: Package binary
+        run: |
+          cd bin
+          tar czf ../fallout_ce-linux-x86_64.tar.gz fallout_ce
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: fallout_ce-linux-x86_64.tar.gz
